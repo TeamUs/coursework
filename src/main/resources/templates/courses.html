@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Список всех курсов</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      background-color: #f0f0f0; /* Светлый фон */
+      color: #333;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    header {
+      padding: 20px 20px; /* Уменьшение отступов */
+      text-align: center;
+      background: #111; /* Темный фон */
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      position: relative;
+      z-index: 100;
+      margin-top: 0;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem;
+      margin-bottom: 10px;
+      margin-top: 0;
+    }
+
+    header p {
+      font-size: 1.2rem;
+      margin-bottom: 1.5rem;
+      margin-top: 0;
+    }
+
+    .card {
+      margin: 20px 0;
+      border-radius: 10px;
+      background-color: #ffffff;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      border: 1px solid #ddd;
+    }
+
+    footer {
+      background-color: #111;
+      color: white;
+      padding: 20px 0;
+      text-align: center;
+      width: 100%;
+      position: relative;
+      z-index: 100;
+    }
+
+    .table th {
+      background-color: #c72c41;
+      color: #fff;
+    }
+
+    .table td {
+      background-color: #f9f9f9;
+    }
+
+    .btn-primary {
+      background-color: #c72c41;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background-color: #a02030;
+    }
+
+    .btn-primary:active {
+      transform: none; /* Убираем эффект уменьшения при нажатии */
+    }
+
+    .modal-header, .modal-body {
+      background-color: #ffffff;
+      color: #333;
+    }
+
+    .modal-footer {
+      background-color: #f8f3ef;
+    }
+
+    .rounded-button {
+      border-radius: 30px;
+      padding: 10px 20px;
+    }
+
+    .section-title {
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+    }
+
+    .chart-container {
+      margin: 40px 0;
+    }
+
+    /* Общий контейнер для меню и навигационного бара */
+    .header-nav-container {
+      position: relative;
+      width: 100%;
+      margin-bottom: 0;
+    }
+
+    /* Навигационное меню */
+    .nav {
+      background-color: #111; /* Темный фон для меню */
+      color: #fff; /* Белый цвет текста */
+      padding: 5px 0; /* Уменьшение отступов */
+      display: flex;
+      justify-content: center; /* Центрирование ссылок */
+      gap: 30px; /* Расстояние между ссылками */
+      z-index: 1000; /* Поверх других элементов */
+      border-bottom: none;
+    }
+
+    /* Ссылки в навигации */
+    .nav-link {
+      color: #fff;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .nav-link:hover {
+      color: #c72c41; /* Цвет при наведении */
+    }
+
+    /* Верхний навигационный бар */
+    .auth-bar {
+      position: absolute;
+      right: 15px;
+      top: 15px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      z-index: 1100; /* Слой выше меню */
+      border: none;
+    }
+
+    /* Контейнер для кнопок входа и регистрации */
+    .auth-buttons {
+      display: flex;
+      flex-direction: column; /* Кнопки по вертикали */
+      gap: 10px;
+    }
+
+    /* Кнопки входа и регистрации */
+    .btn-primary {
+      background-color: #c72c41; /* Красный цвет фона */
+      border: none;
+      padding: 8px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 5px;
+    }
+
+    .btn-primary:hover {
+      background-color: #a02030; /* Темно-красный при наведении */
+    }
+
+    .btn-primary:active {
+      transform: none; /* Убираем эффект уменьшения при нажатии */
+    }
+
+    /* Стили для имени пользователя */
+    .username {
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Стили для кнопки выхода */
+    .btn-danger {
+      background-color: #c72c41; /* Красный для кнопки выхода */
+      border: none;
+      padding: 5px 15px;
+      font-size: 14px;
+      border-radius: 5px;
+    }
+
+    .btn-danger:hover {
+      background-color: #a02030; /* Темный красный при наведении */
+    }
+    .nav-link.active {
+      color:  #a02030; !important;
+      font-weight: bold;
+    }
+    .modal-header {
+      background-color: #c72c41; /* Matching the button color */
+      color: white;
+      display: flex;
+      justify-content: center; /* Centers the content horizontally */
+      position: relative;
+    }
+
+    .modal-header .btn-close {
+      position: absolute;
+      right: 1rem; /* Position close button on the right */
+    }
+    .modal-header .btn-close {
+      filter: invert(100%); /* Makes the icon white */
+      background-color: rgba(255, 255, 255, 0.3); /* Adds a white background with some transparency */
+      border: 1px solid white; /* White border for visibility */
+      border-radius: 50%; /* Optional: makes the button circular */
+    }
+
+    .modal-header .btn-close:hover {
+      background-color: rgba(255, 255, 255, 0.6); /* Slightly darker background on hover */
+    }
+
+    .course-details {
+      background-color: #f9f9f9;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .course-item {
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .course-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .accent-text {
+      color: #a02030;
+      font-size: 1.3em;
+      font-weight: bold;
+    }
+
+    .btn:hover {
+      background-color: #8B1A2E;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+      .course-item {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-nav-container">
+    <!-- Навигационное меню -->
+    <nav class="nav">
+      <a class="nav-link" href="/">Главная страница</a>
+      <a class="nav-link" href="/courses">Список всех курсов</a>
+      <a class="nav-link" href="/teachers">Наши преподаватели</a>
+      <a class="nav-link" href="/schedule">Расписание</a>
+      <a class="nav-link" href="/reviews">Отзывы</a>
+      <a class="nav-link" href="/aboutAuthor">Об авторе</a>
+    </nav>
+
+    <!-- Верхний навигационный бар -->
+    <div class="auth-bar">
+      <!-- Проверка авторизации пользователя -->
+      <div th:if="${user == null}">
+        <!-- Кнопки входа и регистрации -->
+        <div class="auth-buttons">
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
+            Вход
+          </button>
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal">
+            Регистрация
+          </button>
+        </div>
+      </div>
+
+      <div th:if="${user != null}" class="user-info">
+        <!-- Ссылка на профиль пользователя с применением стиля nav-link -->
+        <a th:href="@{/profile/{id}(id=${user.id})}" th:text="${user.username}" class="nav-link"></a>
+        <!-- Кнопка выхода -->
+        <a href="/logout" class="btn btn-danger">Выйти</a>
+      </div>
+    </div>
+  </div>
+  <h1>Образовательная-онлайн платформа</h1>
+  <p>Управляйте курсами легко и эффективно</p>
+</header>
+
+<div class="card p-4" style="width: 100%; max-width: 100%; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); margin: 0;">
+<!--  <h4 class="section-title" style="font-size: 24px; font-weight: 600; margin-bottom: 20px; color: #333; text-align: center;">Поиск курса по любому критерию</h4>-->
+
+  <form th:action="@{/courses}" method="get" class="mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center" style="gap: 15px;">
+      <!-- Поисковая строка с кнопками -->
+      <div class="d-flex align-items-center" style="gap: 10px; width: 100%;">
+        <input type="text" name="keyword" class="form-control" placeholder="Введите название курса или любой другой параметр" th:value="${keyword}" required style="font-size: 14px; padding: 8px 12px; border-radius: 5px; flex-grow: 1; max-width: calc(100% - 140px);"/>
+
+        <button class="btn btn-light" type="submit" style="font-size: 14px; padding: 8px 15px; border-radius: 5px; background-color: #f5f5f5; color: #333; border: 1px solid #ddd;">Поиск</button>
+        <button type="button" class="btn btn-light" onclick="clearSearch()" style="font-size: 14px; padding: 8px 15px; border-radius: 5px; background-color: #f5f5f5; color: #333; border: 1px solid #ddd;">Очистить</button>
+      </div>
+
+    </div>
+  </form>
+  <!-- Количество курсов -->
+  <h4 style="font-size: 24px; color: #111; text-align: center; margin-top: 0;">
+    Количество курсов: <span id="CourseCount" th:text="${#lists.size(listCourses)}" style="font-weight: 500; color: #111;">0</span>
+  </h4>
+  <!-- Кнопка для добавления курса -->
+  <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addCourseModal"
+          th:if="${user != null and (user.role == 'ADMIN' or user.role == 'TEACHER')}">
+    Добавить курс
+  </button>
+
+</div>
+
+<div class="card p-4" style="border-radius: 15px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); background: #f9f9f9;">
+  <h4 class="section-title" style="font-family: 'Times New Roman', serif; font-size: 2.2em; color: #333; text-align: center; margin-bottom: 30px; font-weight: bold; text-transform: none;">
+    Список курсов
+  </h4>
+
+  <!-- Условие, если курсов нет -->
+  <div th:if="${noCoursesFound}" class="alert alert-warning" style="text-align: center;">
+    По вашему запросу курсы не найдены.
+  </div>
+
+  <!-- Таблица с курсами, если они есть -->
+  <div class="table-responsive" th:if="${!noCoursesFound}">
+    <table class="table table-hover" style="border-collapse: separate; border-spacing: 0 10px; width: 100%; font-size: 15px; text-align: left;">
+      <thead>
+      <tr style="background-color: #2d3e50; color: #fff;">
+        <th style="padding: 15px 20px; font-weight: bold; border-top-left-radius: 10px; border-bottom: 2px solid #fff;">Название курса</th>
+        <th style="padding: 15px 20px; font-weight: bold; border-bottom: 2px solid #fff;">Описание курса</th>
+        <th style="padding: 15px 20px; font-weight: bold; border-bottom: 2px solid #fff;">Преподаватель</th>
+        <th style="padding: 15px 20px; font-weight: bold; border-top-right-radius: 10px; border-bottom: 2px solid #fff;">Действия</th>
+      </tr>
+      </thead>
+      <tbody id="courseTable" style="background-color: #fff; border-radius: 15px;">
+      <tr th:each="course : ${listCourses}" style="border-radius: 10px; background-color: #f3f5f7; transition: background-color 0.3s ease;"
+          th:onclick="'location.href=\'/courses/' + ${course.id} + '\''">
+        <td th:text="${course.courseName}" style="padding: 15px 20px; border-radius: 10px 0 0 10px;">Название курса отсутствует</td>
+        <td th:text="${course.courseDescription}" style="padding: 15px 20px;">Описание курса отсутствует</td>
+        <td th:text="${course.teacher}" style="padding: 15px 20px;">Преподаватель отсутствует</td>
+        <td style="padding: 15px 20px; text-align: center; border-radius: 0 10px 10px 0;">
+          <div class="d-flex justify-content-center">
+            <button type="button" class="btn btn-info me-2 rounded-3" data-bs-toggle="modal" data-bs-target="#editCourseModal"
+                    th:if="${user != null and user.role == 'ADMIN'}"
+                    th:onclick="'openEditModal(' + ${course.id} + ')'" style="font-size: 14px; padding: 8px 15px; border-radius: 5px; border: none; background-color: #c72c41; color: white; transition: background-color 0.3s;">
+              <i class="fas fa-edit"></i> Редактировать
+            </button>
+            <form th:action="@{/delete/{id}(id=${course.id})}" method="post" class="d-inline"
+              th:if="${user != null and user.role == 'ADMIN'}">
+              <button class="btn btn-danger rounded-3" type="submit" style="font-size: 14px; padding: 8px 15px; border-radius: 5px; border: none; background-color: #c72c41; color: white; transition: background-color 0.3s;">
+                <i class="fas fa-trash"></i> Удалить
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<script>
+  // Добавление обработчика событий для предотвращения перехода по клику на кнопки редактирования и удаления
+  document.addEventListener('DOMContentLoaded', function() {
+    const editButtons = document.querySelectorAll('.btn-info');
+    const deleteButtons = document.querySelectorAll('.btn-danger');
+
+    editButtons.forEach(button => {
+      button.addEventListener('click', function(event) {
+        // Останавливаем событие, чтобы не происходил переход
+        event.stopPropagation();
+      });
+    });
+
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', function(event) {
+        // Останавливаем событие, чтобы не происходил переход
+        event.stopPropagation();
+      });
+    });
+  });
+</script>
+
+<!-- Модальное окно для логина -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 15px; overflow: hidden;">
+      <div class="modal-header" style="background-color: #c72c41; color: white; padding: 15px;">
+        <h5 class="modal-title mx-auto" id="loginModalLabel">Вход</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="position: absolute; right: 15px; background-color: white;"></button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <form th:action="@{/login}" method="post">
+          <div class="mb-3">
+            <label for="username" class="form-label">Имя пользователя</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Пароль</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Войти</button>
+        </form>
+      </div>
+      <div class="modal-footer" style="background-color: #f8f3ef;">
+        <p class="text-center w-100" style="font-size: 0.9em; color: #555;">Еще нет аккаунта? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Зарегистрируйтесь</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно для регистрации -->
+<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 15px; overflow: hidden;">
+      <div class="modal-header" style="background-color: #c72c41; color: white; padding: 15px;">
+        <h5 class="modal-title mx-auto" id="registerModalLabel">Регистрация</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="position: absolute; right: 15px; background-color: white;"></button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <form th:action="@{/register}" method="post">
+          <div class="mb-3">
+            <label for="regUsername" class="form-label">Имя пользователя</label>
+            <input type="text" class="form-control" id="regUsername" name="username" required>
+          </div>
+          <div class="mb-3">
+            <label for="regfirstName" class="form-label">Имя пользователя</label>
+            <input type="text" class="form-control" id="regfirstName" name="username" required>
+          </div>
+          <div class="mb-3">
+            <label for="reglastName" class="form-label">Электронная почта</label>
+            <input type="email" class="form-control" id="reglastName" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="regEmail" class="form-label">Электронная почта</label>
+            <input type="email" class="form-control" id="regEmail" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="regPassword" class="form-label">Пароль</label>
+            <input type="password" class="form-control" id="regPassword" name="password" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Зарегистрироваться</button>
+        </form>
+      </div>
+      <div class="modal-footer" style="background-color: #f8f3ef;">
+        <p class="text-center w-100" style="font-size: 0.9em; color: #555;">Уже есть аккаунт? <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Войдите</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const loginModalElement = document.getElementById('loginModal');
+    const registerModalElement = document.getElementById('registerModal');
+
+    // Логика для модального окна логина
+    if (loginModalElement) {
+      loginModalElement.addEventListener('show.bs.modal', function () {
+        const modalBody = loginModalElement.querySelector('.modal-body');
+        modalBody.innerHTML = 'Загрузка...';
+        fetch('/login')
+                .then(response => response.text())
+                .then(data => {
+                  modalBody.innerHTML = data;
+                })
+                .catch(error => {
+                  modalBody.innerHTML = '<p class="text-danger">Ошибка загрузки формы.</p>';
+                });
+      });
+    }
+
+    // Логика для модального окна регистрации
+    if (registerModalElement) {
+      registerModalElement.addEventListener('show.bs.modal', function () {
+        const modalBody = registerModalElement.querySelector('.modal-body');
+        modalBody.innerHTML = 'Загрузка...';
+        fetch('/register')
+                .then(response => response.text())
+                .then(data => {
+                  modalBody.innerHTML = data;
+                })
+                .catch(error => {
+                  modalBody.innerHTML = '<p class="text-danger">Ошибка загрузки формы.</p>';
+                });
+      });
+    }
+  });
+</script>
+<script>
+  // Получаем текущий путь
+  const currentPath = window.location.pathname;
+
+  // Получаем все ссылки в навигационном меню
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  // Перебираем все ссылки и добавляем класс "active" к соответствующей
+  navLinks.forEach(link => {
+    if (link.getAttribute('href') === currentPath) {
+      link.classList.add('active');
+    }
+  });
+</script>
+<!-- Модальное окно для добавления курса -->
+<div class="modal fade" id="addCourseModal" tabindex="-1" aria-labelledby="addCourseModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addCourseModalLabel">Добавить курс</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addCourseForm" method="post" action="/save">
+          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/> <!-- CSRF Token -->
+          <div class="mb-3">
+            <label for="courseName" class="form-label">Название курса</label>
+            <input type="text" class="form-control" id="courseName" name="courseName" required>
+          </div>
+          <div class="mb-3">
+            <label for="courseDescription" class="form-label">Описание курса</label>
+            <textarea class="form-control" id="courseDescription" name="courseDescription" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="courseText" class="form-label">Содержимое курса</label>
+            <textarea type="text" class="form-control" id="courseText" name="courseText" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="startDateTime" class="form-label">Дата начала курса</label>
+            <input type="datetime-local" class="form-control" id="startDateTime" name="startDateTime" required>
+          </div>
+          <div class="mb-3">
+            <label for="teacher" class="form-label">Преподаватель</label>
+            <input type="text" class="form-control" id="teacher" name="teacher" required>
+          </div>
+          <div class="mb-3">
+            <label for="endDateTime" class="form-label">Дата окончания курса</label>
+            <input type="datetime-local" class="form-control" id="endDateTime" name="endDateTime" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+        <button type="button" class="btn btn-primary" onclick="addCourse()">Сохранить курс</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно для редактирования курса -->
+<div class="modal fade" id="editCourseModal" tabindex="-1" aria-labelledby="editCourseModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editCourseModalLabel">Редактировать курс</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editCourseForm">
+          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/> <!-- CSRF Token -->
+          <input type="hidden" id="editCourseId" name="id">
+          <div class="mb-3">
+            <label for="editCourseName" class="form-label">Название курса</label>
+            <input type="text" class="form-control" id="editCourseName" name="courseName" required>
+          </div>
+          <div class="mb-3">
+            <label for="editCourseDescription" class="form-label">Описание курса</label>
+            <textarea class="form-control" id="editCourseDescription" name="courseDescription" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="editCourseText" class="form-label">Содержимое курса</label>
+            <textarea type="text" class="form-control" id="editCourseText" name="courseText" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="editStartDateTime" class="form-label">Дата начала курса</label>
+            <input type="datetime-local" class="form-control" id="editStartDateTime" name="startDateTime" required>
+          </div>
+          <div class="mb-3">
+            <label for="editTeacher" class="form-label">Преподаватель</label>
+            <input type="text" class="form-control" id="editTeacher" name="teacher" required>
+          </div>
+          <div class="mb-3">
+            <label for="editEndDateTime" class="form-label">Дата окончания курса</label>
+            <input type="datetime-local" class="form-control" id="editEndDateTime" name="endDateTime" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+        <button type="button" class="btn btn-primary" onclick="updateCourse()">Сохранить изменения</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="chart-container">
+  <h4 class="text-center">Гистограмма количества курсов по датам</h4>
+  <canvas id="courseHistogram" width="400" height="200"></canvas>
+</div>
+
+<footer>
+  <p>&copy; 2024 Образовательная-онлайн платформа. Все права защищены.</p>
+</footer>
+<script type="text/javascript">
+  function clearSearch() {
+    window.location = "[[@{/courses}]]";
+  }
+
+  function filterCourseByDate() {
+    const selectedDate = document.getElementById('dateFilter').value;
+    const rows = document.querySelectorAll('#courseTable tr');
+
+    rows.forEach(row => {
+      const dateTimeCell = row.cells[4].innerText;
+      const datePart = dateTimeCell.split(' ')[0];
+      const [day, month, year] = datePart.split('.');
+      const formattedDate = `${year}-${month}-${day}`;
+
+      if (formattedDate) {
+        const isMatch = formattedDate === selectedDate;
+        row.style.display = isMatch ? '' : 'none';
+      }
+    });
+
+    updateCourseCount();
+  }
+
+  function updateCourseCount() {
+    const visibleRows = [...document.querySelectorAll('#courseTable tr')]
+            .filter(row => row.style.display !== 'none').length;
+    document.getElementById('CourseCount').innerText = visibleRows;
+  }
+
+  function addCourse() {
+    const course = {
+      courseName: document.getElementById('courseName').value,
+      courseDescription: document.getElementById('courseDescription').value,
+      courseText: document.getElementById('courseText').value,
+      startDateTime: document.getElementById('startDateTime').value,
+      teacher: document.getElementById('teacher').value,
+      endDateTime: document.getElementById('endDateTime').value
+    };
+
+    fetch('/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(course)
+    })
+            .then(response => {
+              if (response.ok) {
+                location.reload();
+              } else {
+                alert('Ошибка при добавлении курса');
+              }
+            });
+
+    let addCourseModal = new bootstrap.Modal(document.getElementById('addCourseModal'));
+    addCourseModal.hide();
+  }
+
+  function updateCourse() {
+    const course = {
+      id: document.getElementById('editCourseId').value,
+      courseName: document.getElementById('editCourseName').value,
+      courseDescription: document.getElementById('editCourseDescription').value,
+      courseText: document.getElementById('editCourseText').value,
+      startDateTime: document.getElementById('editStartDateTime').value,
+      teacher: document.getElementById('editTeacher').value,
+      endDateTime: document.getElementById('editEndDateTime').value
+    };
+
+    fetch('/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(course)
+    })
+            .then(response => {
+              if (response.ok) {
+                location.reload();
+              } else {
+                alert('Ошибка при обновлении курса');
+              }
+            });
+
+    let editCourseModal = new bootstrap.Modal(document.getElementById('editCourseModal'));
+    editCourseModal.hide();
+  }
+
+  function openEditModal(id) {
+    fetch(`/edit/${id}`)
+            .then(response => response.json())
+            .then(course => {
+              document.getElementById('editCourseId').value = course.id;
+              document.getElementById('editCourseName').value = course.courseName;
+              document.getElementById('editCourseDescription').value = course.courseDescription;
+              document.getElementById('editCourseText').value = course.courseText;
+              document.getElementById('editStartDateTime').value = course.startDateTime;
+              document.getElementById('editTeacher').value = course.teacher;
+              document.getElementById('editEndDateTime').value = course.endDateTime;
+            })
+            .catch(error => console.error('Ошибка:', error));
+  }
+
+  fetch('/startDateTime')
+          .then(response => response.json())
+          .then(data => {
+            const labels = Object.keys(data);
+            const counts = Object.values(data);
+            const ctx = document.getElementById('courseHistogram').getContext('2d');
+
+            if (labels.length === 0) {
+              ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+              ctx.fillStyle = "#ffffff";
+              ctx.font = '16px Roboto';
+              ctx.fillText("Нет данных для отображения", 50, 100);
+              return;
+            }
+
+            new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: labels,
+                datasets: [{
+                  label: 'Количество курсов',
+                  data: counts,
+                  backgroundColor: 'rgba(255, 7, 28, 0.7)',
+                  borderColor: 'rgba(255, 7, 28, 1)',
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  y: {
+                    beginAtZero: true
+                  }
+                }
+              }
+            });
+          })
+          .catch(error => {
+            console.error('Ошибка:', error);
+          });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

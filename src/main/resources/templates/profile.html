@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Профиль</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #f0f0f0; /* Светлый фон */
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        header {
+            padding: 20px 20px; /* Уменьшение отступов */
+            text-align: center;
+            background: #111; /* Темный фон */
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 100;
+            margin-top: 0;
+        }
+
+        header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            margin-top: 0;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            margin-top: 0;
+        }
+
+        .card {
+            margin: 20px 0;
+            border-radius: 10px;
+            background-color: #ffffff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
+        }
+
+        footer {
+            background-color: #111;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            width: 100%;
+            position: relative;
+            z-index: 100;
+        }
+
+        .table th {
+            background-color: #c72c41;
+            color: #fff;
+        }
+
+        .table td {
+            background-color: #f9f9f9;
+        }
+
+        .btn-primary {
+            background-color: #c72c41;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #a02030;
+        }
+
+        .btn-primary:active {
+            transform: none; /* Убираем эффект уменьшения при нажатии */
+        }
+
+        .modal-header, .modal-body {
+            background-color: #ffffff;
+            color: #333;
+        }
+
+        .modal-footer {
+            background-color: #f8f3ef;
+        }
+
+        .rounded-button {
+            border-radius: 30px;
+            padding: 10px 20px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .chart-container {
+            margin: 40px 0;
+        }
+
+        /* Общий контейнер для меню и навигационного бара */
+        .header-nav-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        /* Навигационное меню */
+        .nav {
+            background-color: #111; /* Темный фон для меню */
+            color: #fff; /* Белый цвет текста */
+            padding: 5px 0; /* Уменьшение отступов */
+            display: flex;
+            justify-content: center; /* Центрирование ссылок */
+            gap: 30px; /* Расстояние между ссылками */
+            z-index: 1000; /* Поверх других элементов */
+            border-bottom: none;
+        }
+
+        /* Ссылки в навигации */
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .nav-link:hover {
+            color: #c72c41; /* Цвет при наведении */
+        }
+
+        /* Верхний навигационный бар */
+        .auth-bar {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1100; /* Слой выше меню */
+            border: none;
+        }
+
+        /* Контейнер для кнопок входа и регистрации */
+        .auth-buttons {
+            display: flex;
+            flex-direction: column; /* Кнопки по вертикали */
+            gap: 10px;
+        }
+
+        /* Кнопки входа и регистрации */
+        .btn-primary {
+            background-color: #c72c41; /* Красный цвет фона */
+            border: none;
+            padding: 8px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+
+        .btn-primary:hover {
+            background-color: #a02030; /* Темно-красный при наведении */
+        }
+
+        .btn-primary:active {
+            transform: none; /* Убираем эффект уменьшения при нажатии */
+        }
+
+        /* Стили для имени пользователя */
+        .username {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Стили для кнопки выхода */
+        .btn-danger {
+            background-color: #c72c41; /* Красный для кнопки выхода */
+            border: none;
+            padding: 5px 15px;
+            font-size: 14px;
+            border-radius: 5px;
+        }
+
+        .btn-danger:hover {
+            background-color: #a02030; /* Темный красный при наведении */
+        }
+        .nav-link.active {
+            color:  #a02030; !important;
+            font-weight: bold;
+        }
+        .modal-header {
+            background-color: #c72c41; /* Matching the button color */
+            color: white;
+            display: flex;
+            justify-content: center; /* Centers the content horizontally */
+            position: relative;
+        }
+
+        .modal-header .btn-close {
+            position: absolute;
+            right: 1rem; /* Position close button on the right */
+        }
+        .modal-header .btn-close {
+            filter: invert(100%); /* Makes the icon white */
+            background-color: rgba(255, 255, 255, 0.3); /* Adds a white background with some transparency */
+            border: 1px solid white; /* White border for visibility */
+            border-radius: 50%; /* Optional: makes the button circular */
+        }
+
+        .modal-header .btn-close:hover {
+            background-color: rgba(255, 255, 255, 0.6); /* Slightly darker background on hover */
+        }
+
+        .course-details {
+            background-color: #f9f9f9;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .course-item {
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .course-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .accent-text {
+            color: #a02030;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background-color: #8B1A2E;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .course-item {
+                padding: 15px;
+            }
+        }
+        .popular-courses-title {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #111; /* Темный оттенок для выделения заголовка */
+            border-bottom: 3px solid #a02030; /* Нижняя граница в цвет кнопки */
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+        .user-card-header {
+            display: flex;
+            justify-content: flex-start; /* Сдвигаем элементы влево */
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .user-card-header img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid #c72c41;
+            margin-right: 20px; /* Отступ между аватаркой и текстом */
+        }
+
+        .user-card-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0; /* Убираем отступы сверху и снизу */
+        }
+
+        .user-card-header .btn {
+            background-color: #c72c41;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .user-card-header .btn:hover {
+            background-color: #a02030;
+        }
+
+
+        .user-details {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .user-details div {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .user-details div h4 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #c72c41;
+        }
+
+        .user-details div p {
+            font-size: 1.1rem;
+            color: #555;
+        }
+        .accent-text {
+            color: #111;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .user-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .lead {
+            font-size: 1.2rem;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-nav-container">
+        <!-- Навигационное меню -->
+        <nav class="nav">
+            <a class="nav-link" href="/">Главная страница</a>
+            <a class="nav-link" href="/courses">Список всех курсов</a>
+            <a class="nav-link" href="/teachers">Наши преподаватели</a>
+            <a class="nav-link" href="/schedule">Расписание</a>
+            <a class="nav-link" href="/reviews">Отзывы</a>
+            <a class="nav-link" href="/aboutAuthor">Об авторе</a>
+        </nav>
+
+        <!-- Верхний навигационный бар -->
+        <div class="auth-bar">
+            <!-- Проверка авторизации пользователя -->
+            <div th:if="${user == null}">
+                <!-- Кнопки входа и регистрации -->
+                <div class="auth-buttons">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        Вход
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal">
+                        Регистрация
+                    </button>
+                </div>
+            </div>
+
+            <div th:if="${user != null}" class="user-info">
+                <!-- Ссылка на профиль пользователя с применением стиля nav-link -->
+                <a th:href="@{/profile/{id}(id=${user.id})}" th:text="${user.username}" class="nav-link"></a>
+                <!-- Кнопка выхода -->
+                <a href="/logout" class="btn btn-danger">Выйти</a>
+            </div>
+        </div>
+    </div>
+    <h1>Образовательная-онлайн платформа</h1>
+    <p>Управляйте курсами легко и эффективно</p>
+</header>
+<div class="container mt-5">
+    <div class="user-card">
+        <div class="text-center mb-4">
+            <h1 class="display-4 accent-text">Профиль пользователя</h1>
+            <p class="lead">Добро пожаловать в ваш профиль. Здесь вы можете управлять своим аккаунтом и просматривать данные.</p>
+        </div>
+    </div>
+</div>
+<main class="container">
+    <div class="user-card">
+        <div class="user-card-header">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTguvCLKy5tV-8Y7mKou8PDop9bZuop2szFVg&s" alt="Фото пользователя">
+            <div>
+                <h2 th:text="${user.username}">Имя пользователя</h2>
+                <button class="btn" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                    Редактировать профиль
+                </button>
+                <!-- Кнопка для входа в административную панель -->
+                <button class="btn btn-warning" th:if="${user.role == 'ADMIN'}" onclick="location.href='/admin'">
+                    Войти в административную панель
+                </button>
+            </div>
+        </div>
+
+        <div class="user-details">
+            <div>
+                <h4>Основная информация</h4>
+                <p><strong>Никнейм:</strong> <span th:text="${user.username}"></span></p>
+                <p><strong>Имя:</strong> <span th:text="${user.firstName}"></span></p>
+                <p><strong>Фамилия:</strong> <span th:text="${user.lastName}"></span></p>
+            </div>
+
+            <div>
+                <h4>Дополнительная информация</h4>
+                    <p><strong>Дата регистрации:</strong> <span th:text="${#temporals.format(user.registrationDate, 'dd.MM.yyyy')}"></span></p>
+                    <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+                <p><strong>Роль:</strong>
+                    <span th:switch="${user.role}">
+                        <span th:case="'USER'">Пользователь</span>
+                        <span th:case="'TEACHER'">Преподаватель</span>
+                        <span th:case="'ADMIN'">Админ</span>
+                        <span th:case="*">Неизвестная роль</span>
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="mt-5">
+    <p>&copy; 2024 Образовательная-онлайн платформа. Все права защищены.</p>
+</footer>
+
+<!-- Модальное окно для редактирования профиля -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 15px; overflow: hidden;">
+            <div class="modal-header" style="background-color: #c72c41; color: white; padding: 15px;">
+                <h5 class="modal-title mx-auto" id="editProfileModalLabel">Редактирование профиля</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="position: absolute; right: 15px; background-color: white;"></button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <form th:action="@{/edit_profile/{id}(id=${user.id})}" method="post">
+                    <div th:if="${param.error}">
+                        <div class="alert alert-danger">
+                            Пароли не совпадают!
+                        </div>
+                    </div>
+                    <input type="hidden" name="userId" th:value="${user.id}">
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Никнейм</label>
+                        <input type="text" class="form-control" id="username" name="username" th:value="${user.username}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="firstName" class="form-label">Имя</label>
+                        <input type="text" class="form-control" id="firstName" name="firstName" th:value="${user.firstName}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="lastName" class="form-label">Фамилия</label>
+                        <input type="text" class="form-control" id="lastName" name="lastName" th:value="${user.lastName}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" th:value="${user.email}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Новый пароль</label>
+                        <input type="password" class="form-control" id="password" name="password">
+                        <small class="form-text text-muted">Оставьте поле пустым, если не хотите изменять пароль.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Подтверждение пароля</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
+                        <small class="form-text text-muted">Введите тот же пароль для подтверждения.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Сохранить изменения</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Обработка формы через AJAX
+    document.getElementById('editProfileForm').addEventListener('submit', function (event) {
+        event.preventDefault(); // Предотвратить обычную отправку формы
+
+        const form = new FormData(this);
+
+        fetch('/edit_profile/' + userId, {
+            method: 'POST',
+            body: form
+        })
+            .then(response => response.json())  // Предполагаем, что сервер возвращает JSON
+            .then(data => {
+                if (data.success) {
+                    alert('Профиль успешно обновлен!');
+                    // Закрытие модального окна
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
+                    modal.hide();
+                    // Обновить данные пользователя на странице
+                    // Например, обновить отображаемые данные пользователя
+                    document.getElementById('usernameDisplay').textContent = data.user.username;
+                } else {
+                    // Вывод ошибок
+                    alert('Произошла ошибка: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при отправке данных:', error);
+                alert('Ошибка отправки данных.');
+            });
+    });
+</script>
+
+
+<script>
+    // Получаем текущий путь
+    const currentPath = window.location.pathname;
+
+    // Получаем все ссылки в навигационном меню
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    // Перебираем все ссылки и добавляем класс "active" к соответствующей
+    navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        }
+    });
+</script>
+</body>
+</html>

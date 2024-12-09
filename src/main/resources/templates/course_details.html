@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="${course.courseName}">Детали курса</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<style>
+  body {
+    font-family: 'Times New Roman', Times, serif;
+    background-color: #f0f0f0; /* Светлый фон */
+    color: #333;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  header {
+    padding: 20px 20px; /* Уменьшение отступов */
+    text-align: center;
+    background: #111; /* Темный фон */
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    position: relative;
+    z-index: 100;
+    margin-top: 0;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    margin-bottom: 10px;
+    margin-top: 0;
+  }
+
+  header p {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    margin-top: 0;
+  }
+
+  .card {
+    margin: 20px 0;
+    border-radius: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+  }
+
+  footer {
+    background-color: #111;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    width: 100%;
+    position: relative;
+    z-index: 100;
+  }
+
+  .table th {
+    background-color: #c72c41;
+    color: #fff;
+  }
+
+  .table td {
+    background-color: #f9f9f9;
+  }
+
+  .btn-primary {
+    background-color: #c72c41;
+    border: none;
+  }
+
+  .btn-primary:hover {
+    background-color: #a02030;
+  }
+
+  .btn-primary:active {
+    transform: none; /* Убираем эффект уменьшения при нажатии */
+  }
+
+  .modal-header, .modal-body {
+    background-color: #ffffff;
+    color: #333;
+  }
+
+  .modal-footer {
+    background-color: #f8f3ef;
+  }
+
+  .rounded-button {
+    border-radius: 30px;
+    padding: 10px 20px;
+  }
+
+  .section-title {
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+  }
+
+  .chart-container {
+    margin: 40px 0;
+  }
+
+  /* Общий контейнер для меню и навигационного бара */
+  .header-nav-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 0;
+  }
+
+  /* Навигационное меню */
+  .nav {
+    background-color: #111; /* Темный фон для меню */
+    color: #fff; /* Белый цвет текста */
+    padding: 5px 0; /* Уменьшение отступов */
+    display: flex;
+    justify-content: center; /* Центрирование ссылок */
+    gap: 30px; /* Расстояние между ссылками */
+    z-index: 1000; /* Поверх других элементов */
+    border-bottom: none;
+  }
+
+  /* Ссылки в навигации */
+  .nav-link {
+    color: #fff;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .nav-link:hover {
+    color: #c72c41; /* Цвет при наведении */
+  }
+
+  /* Верхний навигационный бар */
+  .auth-bar {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 1100; /* Слой выше меню */
+    border: none;
+  }
+
+  /* Контейнер для кнопок входа и регистрации */
+  .auth-buttons {
+    display: flex;
+    flex-direction: column; /* Кнопки по вертикали */
+    gap: 10px;
+  }
+
+  /* Кнопки входа и регистрации */
+  .btn-primary {
+    background-color: #c72c41; /* Красный цвет фона */
+    border: none;
+    padding: 8px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+  }
+
+  .btn-primary:hover {
+    background-color: #a02030; /* Темно-красный при наведении */
+  }
+
+  .btn-primary:active {
+    transform: none; /* Убираем эффект уменьшения при нажатии */
+  }
+
+  /* Стили для имени пользователя */
+  .username {
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Стили для кнопки выхода */
+  .btn-danger {
+    background-color: #c72c41; /* Красный для кнопки выхода */
+    border: none;
+    padding: 5px 15px;
+    font-size: 14px;
+    border-radius: 5px;
+  }
+
+  .btn-danger:hover {
+    background-color: #a02030; /* Темный красный при наведении */
+  }
+  .nav-link.active {
+    color:  #a02030; !important;
+    font-weight: bold;
+  }
+  .modal-header {
+    background-color: #c72c41; /* Matching the button color */
+    color: white;
+    display: flex;
+    justify-content: center; /* Centers the content horizontally */
+    position: relative;
+  }
+
+  .modal-header .btn-close {
+    position: absolute;
+    right: 1rem; /* Position close button on the right */
+  }
+  .modal-header .btn-close {
+    filter: invert(100%); /* Makes the icon white */
+    background-color: rgba(255, 255, 255, 0.3); /* Adds a white background with some transparency */
+    border: 1px solid white; /* White border for visibility */
+    border-radius: 50%; /* Optional: makes the button circular */
+  }
+
+  .modal-header .btn-close:hover {
+    background-color: rgba(255, 255, 255, 0.6); /* Slightly darker background on hover */
+  }
+
+    .course-details {
+      background-color: #f9f9f9;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .course-item {
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .course-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .accent-text {
+      color: #a02030;
+      font-size: 1.3em;
+      font-weight: bold;
+    }
+
+    .btn:hover {
+      background-color: #8B1A2E;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+      .course-item {
+        padding: 15px;
+      }
+    }
+  </style>
+
+<header>
+  <div class="header-nav-container">
+    <!-- Навигационное меню -->
+    <nav class="nav">
+      <a class="nav-link" href="/">Главная страница</a>
+      <a class="nav-link" href="/courses">Список всех курсов</a>
+      <a class="nav-link" href="/teachers">Наши преподаватели</a>
+      <a class="nav-link" href="/schedule">Расписание</a>
+      <a class="nav-link" href="/reviews">Отзывы</a>
+      <a class="nav-link" href="/aboutAuthor">Об авторе</a>
+    </nav>
+
+    <!-- Верхний навигационный бар -->
+    <div class="auth-bar">
+      <!-- Проверка авторизации пользователя -->
+      <div th:if="${user == null}">
+        <!-- Кнопки входа и регистрации -->
+        <div class="auth-buttons">
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
+            Вход
+          </button>
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal">
+            Регистрация
+          </button>
+        </div>
+      </div>
+
+      <div th:if="${user != null}" class="user-info">
+        <!-- Ссылка на профиль пользователя с применением стиля nav-link -->
+        <a th:href="@{/profile/{id}(id=${user.id})}" th:text="${user.username}" class="nav-link"></a>
+        <!-- Кнопка выхода -->
+        <a href="/logout" class="btn btn-danger">Выйти</a>
+      </div>
+    </div>
+  </div>
+  <h1>Образовательная-онлайн платформа</h1>
+  <p>Управляйте курсами легко и эффективно</p>
+</header>
+<body>
+<div class="container mt-5" style="max-width: 100%; padding: 0 15px;">
+  <div class="row">
+    <div class="col-12">
+      <h1 th:text="${course.courseName}"
+          style="font-family: 'Times New Roman', serif; font-size: 3.5em; color: #111; text-align: center;
+                margin-bottom: 30px; border-bottom: 4px solid #a02030; padding-bottom: 10px;
+                font-weight: bold; text-transform: uppercase;">
+        Название курса
+      </h1>
+      <div class="course-details">
+        <!-- Описание -->
+        <div class="course-item" style="position: relative; padding: 15px 0; border-bottom: 1px solid #e6e6e6;">
+          <strong class="accent-text" style="font-family: 'Times New Roman', serif; font-size: 2em; color: #111;
+                text-align: center; display: block; margin-bottom: 10px;">
+            Описание
+          </strong>
+          <p th:text="${course.courseDescription}" style="font-size: 1.1em; color: #111; text-align: center;">Описание курса</p>
+        </div>
+
+        <!-- Текст курса -->
+        <div class="course-item" style="position: relative; padding: 15px 0; border-bottom: 1px solid #e6e6e6;">
+          <strong class="accent-text" style="font-family: 'Times New Roman', serif; font-size: 2em; color: #111;
+                text-align: center; display: block; margin-bottom: 10px;">
+            Содержимое курса
+          </strong>
+          <p th:text="${course.courseText}" style="font-size: 1.1em; color: #111; text-align: center;">Текст курса</p>
+        </div>
+
+        <!-- Преподаватель -->
+        <div class="course-item" style="position: relative; padding: 15px 0; border-bottom: 1px solid #e6e6e6;">
+          <strong class="accent-text" style="font-family: 'Times New Roman', serif; font-size: 2em; color: #111;
+                text-align: center; display: block; margin-bottom: 10px;">
+            Преподаватель
+          </strong>
+          <p th:text="${course.teacher}" style="font-size: 1.1em; color: #111; text-align: center;">Преподаватель курса</p>
+        </div>
+
+        <!-- Дата начала -->
+        <div class="course-item" style="position: relative; padding: 15px 0; border-bottom: 1px solid #e6e6e6;">
+          <strong class="accent-text" style="font-family: 'Times New Roman', serif; font-size: 2em; color: #111;
+                text-align: center; display: block; margin-bottom: 10px;">
+            Дата начала
+          </strong>
+          <p th:text="${#temporals.format(course.startDateTime, 'dd MMMM yyyy, HH:mm')}"
+             style="font-size: 1.1em; color: #111; text-align: center;">Дата начала</p>
+        </div>
+
+        <!-- Дата окончания -->
+        <div class="course-item" style="position: relative; padding: 15px 0;">
+          <strong class="accent-text" style="font-family: 'Times New Roman', serif; font-size: 2em; color: #111;
+                text-align: center; display: block; margin-bottom: 10px;">
+            Дата окончания
+          </strong>
+          <p th:text="${#temporals.format(course.endDateTime, 'dd MMMM yyyy, HH:mm')}"
+             style="font-size: 1.1em; color: #111; text-align: center;">Дата окончания</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Кнопка назад -->
+  <div class="row mt-5">
+    <div class="col-12 text-center">
+      <a href="/courses" class="btn"
+         style="display: inline-block; background-color: #a02030; color: #fff; font-weight: bold; font-size: 1.2em;
+               padding: 15px 30px; border: none; border-radius: 8px; text-decoration: none; text-align: center; transition: background-color 0.3s;">
+        К списку всех курсов
+      </a>
+    </div>
+  </div>
+<div class="row mt-5">
+  <div class="col-12 text-center">
+    <a href="/" class="btn"
+       style="display: inline-block; background-color: #a02030; color: #fff; font-weight: bold; font-size: 1.2em;
+               padding: 15px 30px; border: none; border-radius: 8px; text-decoration: none; text-align: center; transition: background-color 0.3s;">
+      Вернуться на главную страницу
+    </a>
+  </div>
+</div>
+</div>
+<!-- Модальное окно для логина -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 15px; overflow: hidden;">
+      <div class="modal-header" style="background-color: #c72c41; color: white; padding: 15px;">
+        <h5 class="modal-title mx-auto" id="loginModalLabel">Вход</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="position: absolute; right: 15px; background-color: white;"></button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <form th:action="@{/login}" method="post">
+          <div class="mb-3">
+            <label for="username" class="form-label">Имя пользователя</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Пароль</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Войти</button>
+        </form>
+      </div>
+      <div class="modal-footer" style="background-color: #f8f3ef;">
+        <p class="text-center w-100" style="font-size: 0.9em; color: #555;">Еще нет аккаунта? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Зарегистрируйтесь</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно для регистрации -->
+<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 15px; overflow: hidden;">
+      <div class="modal-header" style="background-color: #c72c41; color: white; padding: 15px;">
+        <h5 class="modal-title mx-auto" id="registerModalLabel">Регистрация</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="position: absolute; right: 15px; background-color: white;"></button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <form th:action="@{/register}" method="post">
+          <div class="mb-3">
+            <label for="regUsername" class="form-label">Имя пользователя</label>
+            <input type="text" class="form-control" id="regUsername" name="username" required>
+          </div>
+          <div class="mb-3">
+            <label for="regfirstName" class="form-label">Имя пользователя</label>
+            <input type="text" class="form-control" id="regfirstName" name="username" required>
+          </div>
+          <div class="mb-3">
+            <label for="reglastName" class="form-label">Электронная почта</label>
+            <input type="email" class="form-control" id="reglastName" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="regEmail" class="form-label">Электронная почта</label>
+            <input type="email" class="form-control" id="regEmail" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="regPassword" class="form-label">Пароль</label>
+            <input type="password" class="form-control" id="regPassword" name="password" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Зарегистрироваться</button>
+        </form>
+      </div>
+      <div class="modal-footer" style="background-color: #f8f3ef;">
+        <p class="text-center w-100" style="font-size: 0.9em; color: #555;">Уже есть аккаунт? <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Войдите</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const loginModalElement = document.getElementById('loginModal');
+    const registerModalElement = document.getElementById('registerModal');
+
+    // Логика для модального окна логина
+    if (loginModalElement) {
+      loginModalElement.addEventListener('show.bs.modal', function () {
+        const modalBody = loginModalElement.querySelector('.modal-body');
+        modalBody.innerHTML = 'Загрузка...';
+        fetch('/login')
+                .then(response => response.text())
+                .then(data => {
+                  modalBody.innerHTML = data;
+                })
+                .catch(error => {
+                  modalBody.innerHTML = '<p class="text-danger">Ошибка загрузки формы.</p>';
+                });
+      });
+    }
+
+    // Логика для модального окна регистрации
+    if (registerModalElement) {
+      registerModalElement.addEventListener('show.bs.modal', function () {
+        const modalBody = registerModalElement.querySelector('.modal-body');
+        modalBody.innerHTML = 'Загрузка...';
+        fetch('/register')
+                .then(response => response.text())
+                .then(data => {
+                  modalBody.innerHTML = data;
+                })
+                .catch(error => {
+                  modalBody.innerHTML = '<p class="text-danger">Ошибка загрузки формы.</p>';
+                });
+      });
+    }
+  });
+</script>
+<script>
+  // Получаем текущий путь
+  const currentPath = window.location.pathname;
+
+  // Получаем все ссылки в навигационном меню
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  // Перебираем все ссылки и добавляем класс "active" к соответствующей
+  navLinks.forEach(link => {
+    if (link.getAttribute('href') === currentPath) {
+      link.classList.add('active');
+    }
+  });
+</script>
+<footer class="mt-5">
+  <p>&copy; 2024 Образовательная-онлайн платформа. Все права защищены.</p>
+</footer>
+</body>
+</html>
