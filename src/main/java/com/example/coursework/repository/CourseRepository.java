@@ -13,7 +13,6 @@ import java.util.List;
 public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query("SELECT p FROM Course p WHERE CONCAT(p.courseName, ' ', p.courseDescription, ' ', p.teacher) LIKE %?1%")
     List<Course> search(String searchTerm);
-    List<Course> findTop6ByOrderByStartDateTimeDesc();
     @Query("SELECT c FROM Course c WHERE c.startDateTime >= :startDateTime AND c.endDateTime <= :endDateTime")
     List<Course> findCoursesByDateRange(@Param("startDateTime") LocalDateTime startDateTime, @Param("endDateTime") LocalDateTime endDateTime);
 
